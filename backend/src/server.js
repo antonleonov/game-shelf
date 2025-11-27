@@ -20,11 +20,11 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-// Support multiple origins for development (localhost and network IP)
+// Support multiple origins for development
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   'http://localhost:3000',
-  'http://10.11.20.39:3000'
+  'http://127.0.0.1:3000'
 ].filter(Boolean);
 
 app.use(cors({
@@ -35,12 +35,8 @@ app.use(cors({
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      // In development, allow any origin from local network
-      if (process.env.NODE_ENV === 'development' && origin.startsWith('http://10.11.20.39')) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
+      console.log(`CORS blocked origin: ${origin}. Allowed origins:`, allowedOrigins);
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true

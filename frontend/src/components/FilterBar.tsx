@@ -101,7 +101,7 @@ export default function FilterBar({
             <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white animate-spin z-10" />
           )}
           <Input
-            placeholder="Q Search games..."
+            placeholder="Search games..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             className="pl-9 bg-[#424652] text-white placeholder:text-white/60 border-[#424652]"

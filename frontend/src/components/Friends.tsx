@@ -113,23 +113,28 @@ export default function Friends() {
             <CardDescription>{pending.length} pending friend requests</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            {pending.map((req) => (
-              <Card key={req.id} className="flex items-center gap-4 p-4">
-                <Avatar>
-                  {req.friend_picture ? (
-                    <AvatarImage src={req.friend_picture} alt={req.friend_name} />
-                  ) : null}
-                  <AvatarFallback>{req.friend_name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <h4 className="font-semibold">{req.friend_name}</h4>
-                  <p className="text-sm text-muted-foreground">{req.friend_email}</p>
-                </div>
-                <Button onClick={() => acceptRequest(req.id)} size="sm">
-                  Accept
-                </Button>
-              </Card>
-            ))}
+            {pending.map((req) => {
+              const name = req.name || req.friend_name || 'Unknown'
+              const email = req.email || req.friend_email || ''
+              const picture = req.picture || req.friend_picture
+              return (
+                <Card key={req.id} className="flex items-center gap-4 p-4">
+                  <Avatar>
+                    {picture ? (
+                      <AvatarImage src={picture} alt={name} />
+                    ) : null}
+                    <AvatarFallback>{name.charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <h4 className="font-semibold">{name}</h4>
+                    <p className="text-sm text-muted-foreground">{email}</p>
+                  </div>
+                  <Button onClick={() => acceptRequest(req.id)} size="sm">
+                    Accept
+                  </Button>
+                </Card>
+              )
+            })}
           </CardContent>
         </Card>
       )}
@@ -163,29 +168,34 @@ export default function Friends() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {friends.map((friend) => (
-            <Card key={friend.id}>
-              <CardContent className="p-4 flex items-center gap-4">
-                <Avatar>
-                  {friend.friend_picture ? (
-                    <AvatarImage src={friend.friend_picture} alt={friend.friend_name} />
-                  ) : null}
-                  <AvatarFallback>{friend.friend_name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <h4 className="font-semibold">{friend.friend_name}</h4>
-                  <p className="text-sm text-muted-foreground">{friend.friend_email}</p>
-                </div>
-                <Button
-                  onClick={() => removeFriend(friend.id)}
-                  variant="destructive"
-                  size="sm"
-                >
-                  Remove
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+          {friends.map((friend) => {
+            const name = friend.friend_name || 'Unknown'
+            const email = friend.friend_email || ''
+            const picture = friend.friend_picture
+            return (
+              <Card key={friend.id}>
+                <CardContent className="p-4 flex items-center gap-4">
+                  <Avatar>
+                    {picture ? (
+                      <AvatarImage src={picture} alt={name} />
+                    ) : null}
+                    <AvatarFallback>{name.charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <h4 className="font-semibold">{name}</h4>
+                    <p className="text-sm text-muted-foreground">{email}</p>
+                  </div>
+                  <Button
+                    onClick={() => removeFriend(friend.id)}
+                    variant="destructive"
+                    size="sm"
+                  >
+                    Remove
+                  </Button>
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
       )}
     </div>

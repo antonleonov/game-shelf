@@ -156,7 +156,7 @@ export default function AddGameDialog({ open, onOpenChange, onAddGame }: AddGame
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white z-10" />
                   <Input
-                    placeholder="Q Search games..."
+                    placeholder="Search games..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}

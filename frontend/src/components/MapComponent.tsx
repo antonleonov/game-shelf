@@ -28,8 +28,18 @@ export default function MapComponent({ userLocation, nearbyUsers }: MapComponent
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return
 
+    let isMounted = true
+
     // Dynamically import Leaflet only on client side
     import('leaflet').then((L) => {
+      // Check if component is still mounted and map not already initialized
+      if (!isMounted || !mapContainerRef.current || mapRef.current) return
+
+      // Check if container already has a map instance
+      if ((mapContainerRef.current as any)._leaflet_id) {
+        return
+      }
+
       // Import CSS
       require('leaflet/dist/leaflet.css')
 
@@ -126,12 +136,23 @@ export default function MapComponent({ userLocation, nearbyUsers }: MapComponent
 
     // Cleanup function
     return () => {
+      isMounted = false
       if (mapRef.current) {
         mapRef.current.remove()
         mapRef.current = null
       }
+      // Clear Leaflet ID from container
+      if (mapContainerRef.current) {
+        delete (mapContainerRef.current as any)._leaflet_id
+      }
     }
   }, [])
+
+  // Update map view when userLocation changes
+  useEffect(() => {
+    if (!mapRef.current) return
+    mapRef.current.setView([userLocation.latitude, userLocation.longitude], 13)
+  }, [userLocation.latitude, userLocation.longitude])
 
   // Update markers when nearbyUsers changes
   useEffect(() => {
