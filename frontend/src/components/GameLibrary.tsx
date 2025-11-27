@@ -265,7 +265,7 @@ export default function GameLibrary({
 
                 {game.hours_played !== undefined && game.hours_played > 0 && (
                   <p className="text-sm text-muted-foreground">
-                    {game.hours_played}h played
+                    {Math.round(game.hours_played)}h played
                   </p>
                 )}
               </div>

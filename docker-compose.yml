@@ -26,7 +26,7 @@ services:
       dockerfile: Dockerfile
     container_name: game-shelf-backend
     ports:
-      - "3001:3001"
+      - "0.0.0.0:3001:3001"
     environment:
       NODE_ENV: development
       PORT: 3001
@@ -36,7 +36,7 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
-      FRONTEND_URL: http://localhost:3000
+      FRONTEND_URL: ${FRONTEND_URL:-http://10.11.20.39:3000}
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -51,10 +51,10 @@ services:
       dockerfile: Dockerfile
     container_name: game-shelf-frontend
     ports:
-      - "3000:3000"
+      - "0.0.0.0:3000:3000"
     environment:
       NODE_ENV: development
-      NEXT_PUBLIC_API_URL: http://localhost:3001
+      NEXT_PUBLIC_API_URL: http://10.11.20.39:3001
       NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       NEXT_PUBLIC_ENABLE_DEV_MODE: ${ENABLE_DEV_MODE:-true}
     volumes:

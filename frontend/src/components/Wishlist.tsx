@@ -98,14 +98,17 @@ export default function Wishlist() {
         </CardHeader>
         <CardContent>
           <div className="flex gap-2">
-            <Input
-              type="text"
-              placeholder="Search games..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && searchGames()}
-              className="flex-1"
-            />
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white z-10" />
+              <Input
+                type="text"
+                placeholder="Q Search games..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && searchGames()}
+                className="pl-9 bg-[#424652] text-white placeholder:text-white/60 border-[#424652]"
+              />
+            </div>
             <Button onClick={searchGames}>
               <Search className="mr-2 h-4 w-4" />
               Search
