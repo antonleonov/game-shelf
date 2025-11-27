@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS games (
   release_date DATE,
   platforms TEXT[], -- Array of platform names
   genres TEXT[], -- Array of genre names
-  rating DECIMAL(3, 2),
+  rating DECIMAL(5, 2), -- IGDB ratings are 0-100 scale
   igdb_data JSONB, -- Store full IGDB response
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

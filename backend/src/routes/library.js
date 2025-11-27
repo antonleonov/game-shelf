@@ -41,8 +41,19 @@ router.post('/', authenticateToken, async (req, res) => {
 
     if (gameResult.rows.length === 0) {
       // Fetch from IGDB and cache
-      const game = await getGameById(igdbId);
-      gameId = game.id;
+      try {
+        const game = await getGameById(igdbId);
+        if (!game || !game.id) {
+          return res.status(404).json({ error: 'Game not found in IGDB' });
+        }
+        gameId = game.id;
+      } catch (error) {
+        console.error('Error fetching game from IGDB:', error);
+        return res.status(500).json({ 
+          error: 'Failed to fetch game data',
+          details: error.message 
+        });
+      }
     } else {
       gameId = gameResult.rows[0].id;
     }

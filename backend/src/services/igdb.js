@@ -157,6 +157,8 @@ async function cacheGame(igdbGame) {
     );
   } catch (error) {
     console.error('Error caching game:', error);
+    // Re-throw the error so callers know caching failed
+    throw error;
   }
 }
 

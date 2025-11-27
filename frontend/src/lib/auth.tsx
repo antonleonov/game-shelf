@@ -45,16 +45,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (googleId: string, email: string, name: string, picture?: string) => {
     try {
+      console.log('Attempting login with:', { googleId, email, name, apiUrl: API_URL })
+      
       const res = await axios.post(`${API_URL}/api/auth/google`, {
         googleId,
         email,
         name,
         picture
       })
+      
+      if (!res.data.token) {
+        throw new Error('No token received from server')
+      }
+      
       Cookies.set('token', res.data.token, { expires: 7 })
       setUser(res.data.user)
-    } catch (error) {
-      console.error('Login error:', error)
+      console.log('Login successful for user:', res.data.user.id)
+    } catch (error: any) {
+      console.error('Login error details:', {
+        message: error?.message,
+        response: error?.response?.data,
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        apiUrl: API_URL
+      })
       throw error
     }
   }

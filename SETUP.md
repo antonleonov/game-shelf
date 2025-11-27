@@ -43,12 +43,38 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id-here
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project or select existing
-3. Enable Google+ API
-4. Go to "Credentials" → "Create Credentials" → "OAuth 2.0 Client ID"
-5. Application type: Web application
-6. Authorized JavaScript origins: `http://localhost:3000`
-7. Authorized redirect URIs: `http://localhost:3000`
-8. Copy Client ID and Client Secret to `.env` file
+3. **Enable APIs:**
+   - Go to "APIs & Services" → "Library"
+   - Search for and enable "Google+ API" (or "People API" for newer projects)
+4. Go to "APIs & Services" → "Credentials"
+5. Click "Create Credentials" → "OAuth 2.0 Client ID"
+6. If prompted, configure OAuth consent screen first:
+   - User Type: External (for development)
+   - App name: Game Shelf (or your choice)
+   - Support email: your email
+   - Developer contact: your email
+   - Save and continue through the scopes (no need to add scopes for basic login)
+7. **Configure OAuth Client:**
+   - Application type: **Web application**
+   - Name: Game Shelf (or your choice)
+   - **Authorized JavaScript origins:** 
+     - Click "Add URI" and enter: `http://localhost:3000`
+     - ⚠️ **IMPORTANT:** Make sure there's no trailing slash!
+   - **Authorized redirect URIs:**
+     - Click "Add URI" and enter: `http://localhost:3000`
+     - ⚠️ **IMPORTANT:** Make sure there's no trailing slash!
+   - Click "Create"
+8. **Copy credentials:**
+   - Copy the **Client ID** (looks like: `406122794218-xxxxx.apps.googleusercontent.com`)
+   - Copy the **Client Secret**
+   - Add both to your `.env` file
+
+**⚠️ Common Mistakes:**
+- ❌ Adding trailing slashes: `http://localhost:3000/` (WRONG)
+- ✅ Correct: `http://localhost:3000` (CORRECT)
+- ❌ Using `https` when running locally
+- ✅ Use `http` for local development
+- ❌ Forgetting to click "Save" after adding URIs
 
 ### 4. Start Services
 
