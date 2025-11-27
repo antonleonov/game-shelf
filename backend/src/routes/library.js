@@ -74,6 +74,9 @@ router.post('/', authenticateToken, async (req, res) => {
     res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error('Add to library error:', error);
+    if (error.code === '23505') {
+      return res.status(409).json({ error: 'Game already exists in library for this platform and type' });
+    }
     res.status(500).json({ error: 'Failed to add game to library' });
   }
 });
@@ -102,16 +105,27 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { purchaseDate, purchasePrice, notes } = req.body;
+    const { purchaseDate, purchasePrice, notes, platform, type } = req.body;
+
+    if (type && !['physical', 'digital'].includes(type)) {
+      return res.status(400).json({ error: 'Type must be "physical" or "digital"' });
+    }
+
+    if (platform !== undefined && platform !== null && platform.trim() === '') {
+      return res.status(400).json({ error: 'Platform cannot be empty' });
+    }
 
     const result = await pool.query(
       `UPDATE user_games 
        SET purchase_date = COALESCE($1, purchase_date),
            purchase_price = COALESCE($2, purchase_price),
-           notes = COALESCE($3, notes)
-       WHERE id = $4 AND user_id = $5
+           notes = COALESCE($3, notes),
+           platform = COALESCE($4, platform),
+           type = COALESCE($5, type),
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $6 AND user_id = $7
        RETURNING *`,
-      [purchaseDate, purchasePrice, notes, id, req.user.id]
+      [purchaseDate, purchasePrice, notes, platform, type, id, req.user.id]
     );
 
     if (result.rows.length === 0) {
@@ -121,6 +135,9 @@ router.put('/:id', authenticateToken, async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Update library error:', error);
+    if (error.code === '23505') {
+      return res.status(409).json({ error: 'Another entry already exists with this type and platform' });
+    }
     res.status(500).json({ error: 'Failed to update game in library' });
   }
 });
