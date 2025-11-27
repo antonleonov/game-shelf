@@ -11,7 +11,9 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U gameshelf"]
       interval: 10s
@@ -63,5 +65,6 @@ services:
     command: npm run dev
 
 volumes:
-  postgres_data:
+  postgres-data:
+    external: true
 
