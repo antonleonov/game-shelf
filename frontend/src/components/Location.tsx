@@ -2,6 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import api from '@/lib/api'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { MapPin } from 'lucide-react'
 
 interface Location {
   id: number
@@ -91,133 +97,109 @@ export default function Location() {
     }
   }
 
-  if (loading) return <div>Loading...</div>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    )
+  }
 
   return (
-    <div>
-      <h2>Location Settings</h2>
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold">Location Settings</h2>
 
-      <div style={{
-        background: 'white',
-        padding: '20px',
-        borderRadius: '8px',
-        marginTop: '24px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-      }}>
-        <h3>Your Location</h3>
-        {location ? (
-          <div>
-            <p>Latitude: {location.latitude}</p>
-            <p>Longitude: {location.longitude}</p>
-            {location.city && <p>City: {location.city}</p>}
-            {location.country && <p>Country: {location.country}</p>}
-            <div style={{ marginTop: '16px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <input
-                  type="checkbox"
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="h-5 w-5" />
+            Your Location
+          </CardTitle>
+          <CardDescription>
+            Set your location to enable game exchange with nearby gamers
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {location ? (
+            <>
+              <div className="space-y-2">
+                <p className="text-sm">
+                  <span className="font-semibold">Latitude:</span> {location.latitude}
+                </p>
+                <p className="text-sm">
+                  <span className="font-semibold">Longitude:</span> {location.longitude}
+                </p>
+                {location.city && (
+                  <p className="text-sm">
+                    <span className="font-semibold">City:</span> {location.city}
+                  </p>
+                )}
+                {location.country && (
+                  <p className="text-sm">
+                    <span className="font-semibold">Country:</span> {location.country}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="privacy"
                   checked={isPublic}
-                  onChange={(e) => {
-                    setIsPublic(e.target.checked)
+                  onCheckedChange={(checked) => {
+                    setIsPublic(checked)
                     updatePrivacy()
                   }}
                 />
-                <span>Make location public for game exchange</span>
-              </label>
-            </div>
-            <button
-              onClick={requestLocation}
-              style={{
-                marginTop: '16px',
-                padding: '10px 20px',
-                background: '#667eea',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer'
-              }}
-            >
-              Update Location
-            </button>
-          </div>
-        ) : (
-          <div>
-            <p style={{ marginBottom: '16px', color: '#666' }}>
-              Set your location to enable game exchange with nearby gamers
-            </p>
-            <button
-              onClick={requestLocation}
-              style={{
-                padding: '10px 20px',
-                background: '#667eea',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer'
-              }}
-            >
-              Set Location
-            </button>
-          </div>
-        )}
-      </div>
-
-      {location && location.is_public && (
-        <div style={{
-          background: 'white',
-          padding: '20px',
-          borderRadius: '8px',
-          marginTop: '24px',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-        }}>
-          <h3>Nearby Gamers</h3>
-          <button
-            onClick={findNearbyUsers}
-            style={{
-              marginTop: '12px',
-              padding: '10px 20px',
-              background: '#10b981',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer'
-            }}
-          >
-            Find Nearby Users
-          </button>
-
-          {nearbyUsers.length > 0 && (
-            <div style={{ marginTop: '16px' }}>
-              {nearbyUsers.map((user) => (
-                <div
-                  key={user.user_id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '12px',
-                    border: '1px solid #e5e5e5',
-                    borderRadius: '6px',
-                    marginTop: '8px'
-                  }}
-                >
-                  {user.picture && (
-                    <img
-                      src={user.picture}
-                      alt={user.name}
-                      style={{ width: '40px', height: '40px', borderRadius: '50%' }}
-                    />
-                  )}
-                  <div style={{ flex: 1 }}>
-                    <h4 style={{ margin: 0 }}>{user.name}</h4>
-                    <p style={{ margin: '4px 0', color: '#666', fontSize: '14px' }}>{user.email}</p>
-                  </div>
-                </div>
-              ))}
+                <Label htmlFor="privacy">Make location public for game exchange</Label>
+              </div>
+              <Button onClick={requestLocation}>
+                Update Location
+              </Button>
+            </>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-muted-foreground">
+                Set your location to enable game exchange with nearby gamers
+              </p>
+              <Button onClick={requestLocation}>
+                Set Location
+              </Button>
             </div>
           )}
-        </div>
+        </CardContent>
+      </Card>
+
+      {location && location.is_public && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Nearby Gamers</CardTitle>
+            <CardDescription>Find gamers near you for game exchange</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button onClick={findNearbyUsers} variant="outline">
+              Find Nearby Users
+            </Button>
+
+            {nearbyUsers.length > 0 && (
+              <div className="space-y-2">
+                {nearbyUsers.map((user) => (
+                  <Card key={user.user_id} className="flex items-center gap-4 p-4">
+                    <Avatar>
+                      {user.picture ? (
+                        <AvatarImage src={user.picture} alt={user.name} />
+                      ) : null}
+                      <AvatarFallback>{user.name?.charAt(0) || 'U'}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <h4 className="font-semibold">{user.name}</h4>
+                      <p className="text-sm text-muted-foreground">{user.email}</p>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
     </div>
   )
 }
-

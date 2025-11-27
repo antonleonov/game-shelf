@@ -2,6 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import api from '@/lib/api'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 
 interface Friend {
   id: number
@@ -68,154 +73,103 @@ export default function Friends() {
     }
   }
 
-  if (loading) return <div>Loading...</div>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    )
+  }
 
   return (
-    <div>
-      <h2>Friends ({friends.length})</h2>
-
-      {pending.length > 0 && (
-        <div style={{
-          background: 'white',
-          padding: '20px',
-          borderRadius: '8px',
-          marginTop: '24px',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-        }}>
-          <h3>Pending Requests ({pending.length})</h3>
-          {pending.map((req) => (
-            <div
-              key={req.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '12px',
-                border: '1px solid #e5e5e5',
-                borderRadius: '6px',
-                marginTop: '8px'
-              }}
-            >
-              {req.friend_picture && (
-                <img
-                  src={req.friend_picture}
-                  alt={req.friend_name}
-                  style={{ width: '40px', height: '40px', borderRadius: '50%' }}
-                />
-              )}
-              <div style={{ flex: 1 }}>
-                <h4 style={{ margin: 0 }}>{req.friend_name}</h4>
-                <p style={{ margin: '4px 0', color: '#666', fontSize: '14px' }}>{req.friend_email}</p>
-              </div>
-              <button
-                onClick={() => acceptRequest(req.id)}
-                style={{
-                  padding: '6px 12px',
-                  background: '#10b981',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                Accept
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div style={{
-        background: 'white',
-        padding: '20px',
-        borderRadius: '8px',
-        marginTop: '24px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-      }}>
-        <h3>Add Friend</h3>
-        <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-          <input
-            type="email"
-            placeholder="Friend's email..."
-            value={searchEmail}
-            onChange={(e) => setSearchEmail(e.target.value)}
-            style={{
-              flex: 1,
-              padding: '10px',
-              border: '1px solid #ddd',
-              borderRadius: '6px'
-            }}
-          />
-          <button
-            onClick={() => sendFriendRequest(searchEmail)}
-            style={{
-              padding: '10px 20px',
-              background: '#667eea',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer'
-            }}
-          >
-            Send Request
-          </button>
-        </div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">Friends</h2>
+        <Badge variant="secondary">{friends.length} friends</Badge>
       </div>
 
+      {pending.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Pending Requests</CardTitle>
+            <CardDescription>{pending.length} pending friend requests</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {pending.map((req) => (
+              <Card key={req.id} className="flex items-center gap-4 p-4">
+                <Avatar>
+                  {req.friend_picture ? (
+                    <AvatarImage src={req.friend_picture} alt={req.friend_name} />
+                  ) : null}
+                  <AvatarFallback>{req.friend_name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h4 className="font-semibold">{req.friend_name}</h4>
+                  <p className="text-sm text-muted-foreground">{req.friend_email}</p>
+                </div>
+                <Button onClick={() => acceptRequest(req.id)} size="sm">
+                  Accept
+                </Button>
+              </Card>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Add Friend</CardTitle>
+          <CardDescription>Send a friend request by email</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-2">
+            <Input
+              type="email"
+              placeholder="Friend's email..."
+              value={searchEmail}
+              onChange={(e) => setSearchEmail(e.target.value)}
+              className="flex-1"
+            />
+            <Button onClick={() => sendFriendRequest(searchEmail)}>
+              Send Request
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {friends.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '40px', color: '#666', marginTop: '24px' }}>
-          <p>No friends yet. Add some friends to connect!</p>
-        </div>
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-muted-foreground">No friends yet. Add some friends to connect!</p>
+          </CardContent>
+        </Card>
       ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-          gap: '20px',
-          marginTop: '24px'
-        }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {friends.map((friend) => (
-            <div
-              key={friend.id}
-              style={{
-                background: 'white',
-                padding: '16px',
-                borderRadius: '8px',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px'
-              }}
-            >
-              {friend.friend_picture && (
-                <img
-                  src={friend.friend_picture}
-                  alt={friend.friend_name}
-                  style={{ width: '50px', height: '50px', borderRadius: '50%' }}
-                />
-              )}
-              <div style={{ flex: 1 }}>
-                <h4 style={{ margin: 0 }}>{friend.friend_name}</h4>
-                <p style={{ margin: '4px 0', color: '#666', fontSize: '14px' }}>{friend.friend_email}</p>
-              </div>
-              <button
-                onClick={() => removeFriend(friend.id)}
-                style={{
-                  padding: '6px 12px',
-                  background: '#ef4444',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '12px'
-                }}
-              >
-                Remove
-              </button>
-            </div>
+            <Card key={friend.id}>
+              <CardContent className="p-4 flex items-center gap-4">
+                <Avatar>
+                  {friend.friend_picture ? (
+                    <AvatarImage src={friend.friend_picture} alt={friend.friend_name} />
+                  ) : null}
+                  <AvatarFallback>{friend.friend_name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h4 className="font-semibold">{friend.friend_name}</h4>
+                  <p className="text-sm text-muted-foreground">{friend.friend_email}</p>
+                </div>
+                <Button
+                  onClick={() => removeFriend(friend.id)}
+                  variant="destructive"
+                  size="sm"
+                >
+                  Remove
+                </Button>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
     </div>
   )
 }
-

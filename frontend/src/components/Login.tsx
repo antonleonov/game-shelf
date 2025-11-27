@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/auth'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 
 declare global {
   interface Window {
@@ -150,48 +152,26 @@ export default function Login() {
   }
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-      minHeight: '100vh',
-      padding: '20px',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-    }}>
-      <div style={{
-        background: 'white',
-        padding: '40px',
-        borderRadius: '12px',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
-        maxWidth: '400px',
-        width: '100%',
-        textAlign: 'center'
-      }}>
-        <h1 style={{ marginBottom: '10px', color: '#333' }}>Game Shelf</h1>
-        <p style={{ marginBottom: '30px', color: '#666' }}>
-          Organize your game library and connect with gamers
-        </p>
-        <button
-          onClick={handleGoogleLogin}
-          disabled={loading}
-          style={{
-            width: '100%',
-            padding: '12px',
-            background: '#4285f4',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            fontSize: '16px',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            opacity: loading ? 0.7 : 1
-          }}
-        >
-          {loading ? 'Loading...' : 'Sign in with Google'}
-        </button>
-        <div id="google-signin-button" style={{ marginTop: '20px' }}></div>
-      </div>
+    <div className="flex items-center justify-center min-h-screen p-4 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center space-y-2">
+          <CardTitle className="text-2xl">Game Shelf</CardTitle>
+          <CardDescription>
+            Organize your game library and connect with gamers
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Button
+            onClick={handleGoogleLogin}
+            disabled={loading}
+            className="w-full"
+            size="lg"
+          >
+            {loading ? 'Loading...' : 'Sign in with Google'}
+          </Button>
+          <div id="google-signin-button" className="flex justify-center mt-4"></div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
-

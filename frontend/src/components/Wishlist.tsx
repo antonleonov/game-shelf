@@ -2,6 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import api from '@/lib/api'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { MoreVertical, Search } from 'lucide-react'
 
 interface WishlistItem {
   id: number
@@ -65,156 +76,108 @@ export default function Wishlist() {
     }
   }
 
-  if (loading) return <div>Loading...</div>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    )
+  }
 
   return (
-    <div>
-      <h2>My Wishlist ({items.length})</h2>
-
-      <div style={{
-        background: 'white',
-        padding: '20px',
-        borderRadius: '8px',
-        marginTop: '24px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-      }}>
-        <h3>Add to Wishlist</h3>
-        <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-          <input
-            type="text"
-            placeholder="Search games..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && searchGames()}
-            style={{
-              flex: 1,
-              padding: '10px',
-              border: '1px solid #ddd',
-              borderRadius: '6px'
-            }}
-          />
-          <button
-            onClick={searchGames}
-            style={{
-              padding: '10px 20px',
-              background: '#667eea',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer'
-            }}
-          >
-            Search
-          </button>
-        </div>
-
-        {searchResults.length > 0 && (
-          <div style={{ marginTop: '16px' }}>
-            {searchResults.map((game: any) => (
-              <div
-                key={game.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '12px',
-                  border: '1px solid #e5e5e5',
-                  borderRadius: '6px',
-                  marginTop: '8px'
-                }}
-              >
-                {game.cover?.url && (
-                  <img
-                    src={`https:${game.cover.url}`}
-                    alt={game.name}
-                    style={{ width: '60px', height: '80px', objectFit: 'cover' }}
-                  />
-                )}
-                <div style={{ flex: 1 }}>
-                  <h4 style={{ margin: 0 }}>{game.name}</h4>
-                  {game.first_release_date && (
-                    <p style={{ margin: '4px 0', color: '#666', fontSize: '14px' }}>
-                      Release: {new Date(game.first_release_date * 1000).toLocaleDateString()}
-                    </p>
-                  )}
-                </div>
-                <button
-                  onClick={() => addToWishlist(game.id)}
-                  style={{
-                    padding: '6px 12px',
-                    background: '#667eea',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '12px'
-                  }}
-                >
-                  Add to Wishlist
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">My Wishlist</h2>
+        <Badge variant="secondary">{items.length} games</Badge>
       </div>
 
+      <Card>
+        <CardHeader>
+          <CardTitle>Add to Wishlist</CardTitle>
+          <CardDescription>Search for games to add to your wishlist</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-2">
+            <Input
+              type="text"
+              placeholder="Search games..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && searchGames()}
+              className="flex-1"
+            />
+            <Button onClick={searchGames}>
+              <Search className="mr-2 h-4 w-4" />
+              Search
+            </Button>
+          </div>
+
+          {searchResults.length > 0 && (
+            <div className="mt-4 space-y-2">
+              {searchResults.map((game: any) => (
+                <Card key={game.id} className="flex items-center gap-4 p-4">
+                  {game.cover?.url && (
+                    <img
+                      src={`https:${game.cover.url}`}
+                      alt={game.name}
+                      className="w-15 h-20 object-cover rounded"
+                    />
+                  )}
+                  <div className="flex-1">
+                    <h4 className="font-semibold">{game.name}</h4>
+                    {game.first_release_date && (
+                      <p className="text-sm text-muted-foreground">
+                        Release: {new Date(game.first_release_date * 1000).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                  <Button onClick={() => addToWishlist(game.id)} size="sm">
+                    Add to Wishlist
+                  </Button>
+                </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {items.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '40px', color: '#666', marginTop: '24px' }}>
-          <p>Your wishlist is empty. Add games you want to play!</p>
-        </div>
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-muted-foreground">Your wishlist is empty. Add games you want to play!</p>
+          </CardContent>
+        </Card>
       ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-          gap: '20px',
-          marginTop: '24px'
-        }}>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {items.map((item) => (
-            <div
-              key={item.id}
-              style={{
-                background: 'white',
-                borderRadius: '8px',
-                overflow: 'hidden',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-              }}
-            >
+            <Card key={item.id} className="overflow-hidden">
               {item.cover_url && (
                 <img
                   src={item.cover_url}
                   alt={item.name}
-                  style={{ width: '100%', height: '250px', objectFit: 'cover' }}
+                  className="w-full h-64 object-cover"
                 />
               )}
-              <div style={{ padding: '12px' }}>
-                <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>{item.name}</h4>
+              <CardContent className="p-4">
+                <h4 className="font-semibold text-sm mb-2 line-clamp-2">{item.name}</h4>
                 {item.release_date && (
-                  <p style={{ margin: '4px 0', fontSize: '12px', color: '#666' }}>
+                  <p className="text-xs text-muted-foreground mb-3">
                     {new Date(item.release_date).toLocaleDateString()}
                   </p>
                 )}
-                <button
+                <Button
                   onClick={() => removeFromWishlist(item.id)}
-                  style={{
-                    marginTop: '8px',
-                    padding: '4px 8px',
-                    background: '#ef4444',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    width: '100%'
-                  }}
+                  variant="destructive"
+                  size="sm"
+                  className="w-full"
                 >
                   Remove
-                </button>
-              </div>
-            </div>
+                </Button>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
     </div>
   )
 }
-
