@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: game-shelf-db
+    environment:
+      POSTGRES_USER: gameshelf
+      POSTGRES_PASSWORD: gameshelf_dev
+      POSTGRES_DB: gameshelf
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gameshelf"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: game-shelf-backend
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgresql://gameshelf:gameshelf_dev@postgres:5432/gameshelf
+      IGDB_CLIENT_ID: ${IGDB_CLIENT_ID:-fq9axor5gt3896p784metcfcs0huin}
+      IGDB_CLIENT_SECRET: ${IGDB_CLIENT_SECRET:-55egp0tx34711ucygwsp4606s6tlic}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+      FRONTEND_URL: http://localhost:3000
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: npm run dev
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: game-shelf-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+      NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend
+    command: npm run dev
+
+volumes:
+  postgres_data:
+
