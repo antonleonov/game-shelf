@@ -51,12 +51,12 @@ A service for gamers to organize their game library, track upcoming releases, co
 
 3. **Start with Docker Compose**
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
 4. **Run database migrations**
    ```bash
-   docker-compose exec backend npm run migrate
+   docker compose exec backend npm run migrate
    ```
 
 5. **Access the application**
@@ -108,7 +108,7 @@ game-shelf/
 │   │   └── lib/          # Utilities (auth, API)
 │   └── Dockerfile
 ├── mcp-agents/           # MCP agents orchestration structure
-├── docker-compose.yml    # Multi-container setup
+├── docker-compose.yml    # Multi-container setup (use `docker compose` command)
 └── README.md
 ```
 

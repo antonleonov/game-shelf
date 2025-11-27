@@ -10,16 +10,16 @@ This directory contains the database Docker setup for Game Shelf.
 
 ## Usage
 
-The database container is automatically started with `docker-compose up`. 
+The database container is automatically started with `docker compose up`. 
 
 ### Using Docker Compose (Recommended)
 
 ```bash
 # Start database only
-docker-compose up -d postgres
+docker compose up -d postgres
 
 # Start all services
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Standalone Database Container
@@ -59,8 +59,8 @@ docker run -d \
 ### Accessing the Database
 
 ```bash
-# Using docker-compose
-docker-compose exec postgres psql -U gameshelf -d gameshelf
+# Using docker compose
+docker compose exec postgres psql -U gameshelf -d gameshelf
 
 # Using standalone container
 docker exec -it game-shelf-db psql -U gameshelf -d gameshelf
@@ -70,10 +70,10 @@ docker exec -it game-shelf-db psql -U gameshelf -d gameshelf
 
 ```bash
 # Stop and remove volumes
-docker-compose down -v
+docker compose down -v
 
 # Start fresh
-docker-compose up -d postgres
+docker compose up -d postgres
 ```
 
 ## Initialization
@@ -92,15 +92,15 @@ These scripts are mounted to `/docker-entrypoint-initdb.d/` which PostgreSQL exe
 
 ## Data Persistence
 
-Database data is persisted in a Docker volume `postgres_data`. To backup:
+Database data is persisted in a Docker volume `postgres-data`. To backup:
 
 ```bash
-docker-compose exec postgres pg_dump -U gameshelf gameshelf > backup.sql
+docker compose exec postgres pg_dump -U gameshelf gameshelf > backup.sql
 ```
 
 To restore:
 
 ```bash
-docker-compose exec -T postgres psql -U gameshelf gameshelf < backup.sql
+docker compose exec -T postgres psql -U gameshelf gameshelf < backup.sql
 ```
 

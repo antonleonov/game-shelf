@@ -54,20 +54,20 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id-here
 
 ```bash
 # Start all services
-docker-compose up -d
+docker compose up -d
 
 # Check logs
-docker-compose logs -f
+docker compose logs -f
 
 # Stop services
-docker-compose down
+docker compose down
 ```
 
 ### 5. Run Database Migrations
 
 ```bash
 # Run migrations
-docker-compose exec backend npm run migrate
+docker compose exec backend npm run migrate
 ```
 
 ### 6. Verify Setup
@@ -82,7 +82,7 @@ docker-compose exec backend npm run migrate
 
 ```bash
 # Enter backend container
-docker-compose exec backend sh
+docker compose exec backend sh
 
 # Or run locally (requires Node.js)
 cd backend
@@ -94,7 +94,7 @@ npm run dev
 
 ```bash
 # Enter frontend container
-docker-compose exec frontend sh
+docker compose exec frontend sh
 
 # Or run locally (requires Node.js)
 cd frontend
@@ -106,7 +106,7 @@ npm run dev
 
 ```bash
 # Connect to PostgreSQL
-docker-compose exec postgres psql -U gameshelf -d gameshelf
+docker compose exec postgres psql -U gameshelf -d gameshelf
 ```
 
 ## Troubleshooting
@@ -119,9 +119,9 @@ If ports 3000, 3001, or 5432 are in use:
 ### Database Connection Issues
 ```bash
 # Reset database
-docker-compose down -v
-docker-compose up -d
-docker-compose exec backend npm run migrate
+docker compose down -v
+docker compose up -d
+docker compose exec backend npm run migrate
 ```
 
 ### IGDB API Issues
