@@ -89,7 +89,9 @@ async function getGameById(igdbId) {
 
 async function getUpcomingReleases(limit = 50) {
   const now = Math.floor(Date.now() / 1000);
-  const igdbQuery = `fields id,name,summary,cover.url,first_release_date,platforms.name,genres.name,rating; where first_release_date > ${now} & rating > 0; sort first_release_date asc; limit ${limit};`;
+  // Remove rating filter to get more upcoming games (many don't have ratings yet)
+  // Also filter for games with covers to ensure we have images
+  const igdbQuery = `fields id,name,summary,cover.url,first_release_date,platforms.name,genres.name,rating; where first_release_date > ${now} & cover != null; sort first_release_date asc; limit ${limit};`;
   const games = await makeIGDBRequest('games', igdbQuery);
   
   // Cache games
