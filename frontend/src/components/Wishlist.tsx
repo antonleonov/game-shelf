@@ -136,22 +136,22 @@ export default function Wishlist() {
                         className="w-full h-80 object-cover"
                       />
                     )}
-                  <CardContent className="p-4">
-                    <h4 className="font-semibold text-sm mb-2 line-clamp-2">{game.name}</h4>
-                    {game.first_release_date && (
-                      <p className="text-xs text-muted-foreground mb-3">
-                        Release: {new Date(game.first_release_date * 1000).toLocaleDateString()}
-                      </p>
-                    )}
-                    <Button
-                      onClick={() => addToWishlist(game.id)}
-                      size="sm"
-                      className="w-full"
-                    >
-                      Add to Wishlist
-                    </Button>
-                  </CardContent>
-                </Card>
+                    <CardContent className="p-4">
+                      <h4 className="font-semibold text-sm mb-2 line-clamp-2">{game.name}</h4>
+                      {game.first_release_date && (
+                        <p className="text-xs text-muted-foreground mb-3">
+                          Release: {new Date(game.first_release_date * 1000).toLocaleDateString()}
+                        </p>
+                      )}
+                      <Button
+                        onClick={() => addToWishlist(game.id)}
+                        size="sm"
+                        className="w-full"
+                      >
+                        Add to Wishlist
+                      </Button>
+                    </CardContent>
+                  </Card>
                 )
               })}
             </div>

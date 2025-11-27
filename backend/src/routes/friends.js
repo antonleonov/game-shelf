@@ -56,6 +56,31 @@ router.get('/pending', authenticateToken, async (req, res) => {
   }
 });
 
+// Search users by email
+router.get('/search', authenticateToken, async (req, res) => {
+  try {
+    const { email } = req.query;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email required' });
+    }
+
+    const result = await pool.query(
+      'SELECT id, email, name, picture FROM users WHERE email = $1 AND id != $2',
+      [email, req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Search user error:', error);
+    res.status(500).json({ error: 'Failed to search user' });
+  }
+});
+
 // Send friend request
 router.post('/request', authenticateToken, async (req, res) => {
   try {

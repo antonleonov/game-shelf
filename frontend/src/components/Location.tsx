@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import api from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -8,6 +9,12 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { MapPin } from 'lucide-react'
+
+// Dynamically import the map component to avoid SSR issues
+const MapComponent = dynamic(() => import('./MapComponent'), { 
+  ssr: false,
+  loading: () => <div className="h-96 bg-muted rounded-lg flex items-center justify-center">Loading map...</div>
+})
 
 interface Location {
   id: number
@@ -167,6 +174,22 @@ export default function Location() {
           )}
         </CardContent>
       </Card>
+
+      {/* Map Display */}
+      {location && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Map View</CardTitle>
+            <CardDescription>Your location and nearby gamers on the map</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <MapComponent
+              userLocation={location}
+              nearbyUsers={nearbyUsers}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {location && location.is_public && (
         <Card>

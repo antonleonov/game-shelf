@@ -49,8 +49,26 @@ export default function Friends() {
   }
 
   const sendFriendRequest = async (email: string) => {
-    // In a real app, you'd search for users by email first
-    alert('Friend request feature - need user search by email first')
+    if (!email.trim()) {
+      alert('Please enter an email address')
+      return
+    }
+
+    try {
+      // First, search for the user by email
+      const searchRes = await api.get(`/api/friends/search?email=${encodeURIComponent(email)}`)
+      const user = searchRes.data
+
+      // Then send the friend request
+      await api.post('/api/friends/request', { friendId: user.id })
+      alert(`Friend request sent to ${user.name || user.email}!`)
+      setSearchEmail('')
+      await loadPending()
+    } catch (error: any) {
+      console.error('Failed to send friend request:', error)
+      const errorMessage = error?.response?.data?.error || 'Failed to send friend request'
+      alert(errorMessage)
+    }
   }
 
   const acceptRequest = async (id: number) => {
