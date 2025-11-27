@@ -1,97 +1,114 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/auth'
-import api from '@/lib/api'
 import GameLibrary from './GameLibrary'
 import Wishlist from './Wishlist'
 import Friends from './Friends'
 import Location from './Location'
 import UpcomingReleases from './UpcomingReleases'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 export default function Dashboard() {
   const { user, logout } = useAuth()
-  const [activeTab, setActiveTab] = useState('library')
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f5f5f5' }}>
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header style={{
-        background: 'white',
-        padding: '16px 24px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
-        <h1 style={{ margin: 0, color: '#333' }}>Game Shelf</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <span style={{ color: '#666' }}>{user?.name}</span>
-          {user?.picture && (
-            <img
-              src={user.picture}
-              alt={user.name}
-              style={{ width: '32px', height: '32px', borderRadius: '50%' }}
-            />
-          )}
-          <button
-            onClick={logout}
-            style={{
-              padding: '8px 16px',
-              background: '#ef4444',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer'
-            }}
-          >
-            Logout
-          </button>
+      <header className="border-b bg-card">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-foreground">Game Shelf</h1>
+          <div className="flex items-center gap-4">
+            <span className="text-muted-foreground">{user?.name}</span>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 focus:outline-none">
+                  {user?.picture ? (
+                    <Avatar>
+                      <AvatarImage src={user.picture} alt={user.name} />
+                      <AvatarFallback>{user.name?.charAt(0) || 'U'}</AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <Avatar>
+                      <AvatarFallback>{user?.name?.charAt(0) || 'U'}</AvatarFallback>
+                    </Avatar>
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={logout} className="text-destructive">
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </header>
 
-      {/* Navigation Tabs */}
-      <nav style={{
-        background: 'white',
-        borderBottom: '1px solid #e5e5e5',
-        display: 'flex',
-        gap: '8px',
-        padding: '0 24px'
-      }}>
-        {[
-          { id: 'library', label: 'My Library' },
-          { id: 'wishlist', label: 'Wishlist' },
-          { id: 'upcoming', label: 'Upcoming Releases' },
-          { id: 'friends', label: 'Friends' },
-          { id: 'location', label: 'Location' }
-        ].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            style={{
-              padding: '12px 20px',
-              background: activeTab === tab.id ? '#667eea' : 'transparent',
-              color: activeTab === tab.id ? 'white' : '#666',
-              border: 'none',
-              borderBottom: activeTab === tab.id ? '2px solid #667eea' : '2px solid transparent',
-              cursor: 'pointer',
-              fontWeight: activeTab === tab.id ? '600' : '400'
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </nav>
+      {/* Navigation Tabs and Content */}
+      <Tabs defaultValue="library" className="w-full">
+        <div className="border-b bg-card">
+          <div className="container mx-auto px-4">
+            <TabsList className="w-full justify-start bg-transparent h-auto p-0 border-b">
+              <TabsTrigger 
+                value="library" 
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                My Library
+              </TabsTrigger>
+              <TabsTrigger 
+                value="wishlist" 
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                Wishlist
+              </TabsTrigger>
+              <TabsTrigger 
+                value="upcoming" 
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                Upcoming Releases
+              </TabsTrigger>
+              <TabsTrigger 
+                value="friends" 
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                Friends
+              </TabsTrigger>
+              <TabsTrigger 
+                value="location" 
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                Location
+              </TabsTrigger>
+            </TabsList>
+          </div>
+        </div>
 
-      {/* Content */}
-      <main style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-        {activeTab === 'library' && <GameLibrary />}
-        {activeTab === 'wishlist' && <Wishlist />}
-        {activeTab === 'upcoming' && <UpcomingReleases />}
-        {activeTab === 'friends' && <Friends />}
-        {activeTab === 'location' && <Location />}
-      </main>
+        {/* Content */}
+        <div className="container mx-auto px-4 py-6">
+          <TabsContent value="library" className="mt-0">
+            <GameLibrary />
+          </TabsContent>
+          <TabsContent value="wishlist" className="mt-0">
+            <Wishlist />
+          </TabsContent>
+          <TabsContent value="upcoming" className="mt-0">
+            <UpcomingReleases />
+          </TabsContent>
+          <TabsContent value="friends" className="mt-0">
+            <Friends />
+          </TabsContent>
+          <TabsContent value="location" className="mt-0">
+            <Location />
+          </TabsContent>
+        </div>
+      </Tabs>
     </div>
   )
 }
-

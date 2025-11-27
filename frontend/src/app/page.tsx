@@ -9,8 +9,8 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <p>Loading...</p>
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-muted-foreground">Loading...</p>
       </div>
     )
   }
@@ -21,4 +21,3 @@ export default function Home() {
 
   return <Dashboard />
 }
-

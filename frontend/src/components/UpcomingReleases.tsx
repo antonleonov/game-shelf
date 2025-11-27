@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import api from '@/lib/api'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 
 export default function UpcomingReleases() {
   const [releases, setReleases] = useState<any[]>([])
@@ -32,68 +34,53 @@ export default function UpcomingReleases() {
     }
   }
 
-  if (loading) return <div>Loading upcoming releases...</div>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <p className="text-muted-foreground">Loading upcoming releases...</p>
+      </div>
+    )
+  }
 
   return (
-    <div>
-      <h2>Upcoming Releases</h2>
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold">Upcoming Releases</h2>
       {releases.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '40px', color: '#666', marginTop: '24px' }}>
-          <p>No upcoming releases found.</p>
-        </div>
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-muted-foreground">No upcoming releases found.</p>
+          </CardContent>
+        </Card>
       ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-          gap: '20px',
-          marginTop: '24px'
-        }}>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {releases.map((game: any) => (
-            <div
-              key={game.id}
-              style={{
-                background: 'white',
-                borderRadius: '8px',
-                overflow: 'hidden',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-              }}
-            >
+            <Card key={game.id} className="overflow-hidden">
               {game.cover?.url && (
                 <img
                   src={`https:${game.cover.url}`}
                   alt={game.name}
-                  style={{ width: '100%', height: '250px', objectFit: 'cover' }}
+                  className="w-full h-64 object-cover"
                 />
               )}
-              <div style={{ padding: '12px' }}>
-                <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>{game.name}</h4>
+              <CardContent className="p-4">
+                <h4 className="font-semibold text-sm mb-2 line-clamp-2">{game.name}</h4>
                 {game.first_release_date && (
-                  <p style={{ margin: '4px 0', fontSize: '12px', color: '#666' }}>
+                  <p className="text-xs text-muted-foreground mb-3">
                     {new Date(game.first_release_date * 1000).toLocaleDateString()}
                   </p>
                 )}
-                <button
+                <Button
                   onClick={() => addToWishlist(game.id)}
-                  style={{
-                    marginTop: '8px',
-                    padding: '6px 12px',
-                    background: '#667eea',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    width: '100%'
-                  }}
+                  size="sm"
+                  className="w-full"
                 >
                   Add to Wishlist
-                </button>
-              </div>
-            </div>
+                </Button>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
     </div>
   )
 }
-

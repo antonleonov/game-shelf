@@ -2,6 +2,20 @@
 
 import { useState, useEffect } from 'react'
 import api from '@/lib/api'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { MoreVertical, Edit, Trash2, Plus, Search } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 
 interface Game {
   id: number
@@ -17,7 +31,7 @@ interface Game {
 export default function GameLibrary() {
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
-  const [showAddForm, setShowAddForm] = useState(false)
+  const [showAddDialog, setShowAddDialog] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [typeSelections, setTypeSelections] = useState<Record<number, 'physical' | 'digital'>>({})
@@ -64,16 +78,19 @@ export default function GameLibrary() {
         }
       })
     }
-    // Always allow PC as a fallback option
     options.add('PC')
     return Array.from(options)
   }
 
-  const handlePlatformSelectChange = (gameId: number, values: string[]) => {
-    setPlatformSelections((prev) => ({
-      ...prev,
-      [gameId]: values,
-    }))
+  const handlePlatformToggle = (gameId: number, platform: string, checked: boolean) => {
+    setPlatformSelections((prev) => {
+      const current = prev[gameId] || []
+      if (checked) {
+        return { ...prev, [gameId]: [...current, platform] }
+      } else {
+        return { ...prev, [gameId]: current.filter((p) => p !== platform) }
+      }
+    })
   }
 
   const handleTypeSelection = (gameId: number, type: 'physical' | 'digital') => {
@@ -123,6 +140,9 @@ export default function GameLibrary() {
       await loadLibrary()
       setPlatformSelections((prev) => ({ ...prev, [igdbId]: [] }))
       setCustomPlatformInputs((prev) => ({ ...prev, [igdbId]: '' }))
+      setShowAddDialog(false)
+      setSearchQuery('')
+      setSearchResults([])
     } catch (error: any) {
       console.error('Failed to add game:', error)
       alert(error?.response?.data?.error || 'Failed to add game')
@@ -175,384 +195,291 @@ export default function GameLibrary() {
     }
   }
 
-  if (loading) return <div>Loading...</div>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    )
+  }
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <h2>My Game Library ({games.length})</h2>
-        <button
-          onClick={() => setShowAddForm(!showAddForm)}
-          style={{
-            padding: '10px 20px',
-            background: '#667eea',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer'
-          }}
-        >
-          Add Game
-        </button>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-semibold">My Game Library</h2>
+          <p className="text-sm text-muted-foreground mt-1">{games.length} games</p>
+        </div>
+        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Game
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Add Game to Library</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  placeholder="Search games..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && searchGames()}
+                  className="flex-1"
+                />
+                <Button onClick={searchGames} type="button">
+                  <Search className="h-4 w-4 mr-2" />
+                  Search
+                </Button>
+              </div>
+
+              {searchResults.length > 0 && (
+                <div className="space-y-4 mt-4">
+                  {searchResults.map((game: any) => {
+                    const platformOptions = getPlatformOptions(game)
+                    const selectedPlatforms = platformSelections[game.id] || []
+                    const selectedType = typeSelections[game.id] || 'physical'
+
+                    return (
+                      <Card key={game.id}>
+                        <CardContent className="p-4">
+                          <div className="flex gap-4">
+                            {game.cover?.url && (
+                              <img
+                                src={`https:${game.cover.url}`}
+                                alt={game.name}
+                                className="w-16 h-20 object-cover rounded"
+                              />
+                            )}
+                            <div className="flex-1 space-y-3">
+                              <div>
+                                <h4 className="font-semibold">{game.name}</h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {game.platforms?.map((p: any) => p.name).join(', ')}
+                                </p>
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label className="text-xs">Edition Type</Label>
+                                <div className="flex gap-2">
+                                  {(['physical', 'digital'] as const).map((type) => (
+                                    <Button
+                                      key={type}
+                                      type="button"
+                                      variant={selectedType === type ? 'default' : 'outline'}
+                                      size="sm"
+                                      onClick={() => handleTypeSelection(game.id, type)}
+                                      className="capitalize"
+                                    >
+                                      {type}
+                                    </Button>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label className="text-xs">Platforms you own</Label>
+                                <div className="space-y-2 max-h-32 overflow-y-auto border rounded-md p-2">
+                                  {platformOptions.map((platform) => {
+                                    const isChecked = selectedPlatforms.includes(platform)
+                                    return (
+                                      <div key={platform} className="flex items-center space-x-2">
+                                        <Checkbox
+                                          id={`${game.id}-${platform}`}
+                                          checked={isChecked}
+                                          onCheckedChange={(checked) =>
+                                            handlePlatformToggle(game.id, platform, checked as boolean)
+                                          }
+                                        />
+                                        <Label
+                                          htmlFor={`${game.id}-${platform}`}
+                                          className="text-sm font-normal cursor-pointer"
+                                        >
+                                          {platform}
+                                        </Label>
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              </div>
+
+                              <div className="flex gap-2">
+                                <Input
+                                  type="text"
+                                  placeholder="Add custom platform (e.g., PC, Steam Deck)"
+                                  value={customPlatformInputs[game.id] || ''}
+                                  onChange={(e) =>
+                                    setCustomPlatformInputs((prev) => ({
+                                      ...prev,
+                                      [game.id]: e.target.value,
+                                    }))
+                                  }
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault()
+                                      addCustomPlatform(game.id)
+                                    }
+                                  }}
+                                  className="flex-1"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => addCustomPlatform(game.id)}
+                                >
+                                  Add
+                                </Button>
+                              </div>
+
+                              {selectedPlatforms.length > 0 && (
+                                <div className="flex flex-wrap gap-2">
+                                  {selectedPlatforms.map((platform) => (
+                                    <Badge key={platform} variant="secondary">
+                                      {platform}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
+
+                              <Button
+                                onClick={() => handleAddSelectedPlatforms(game)}
+                                disabled={selectedPlatforms.length === 0}
+                                className="w-full"
+                              >
+                                Add {selectedPlatforms.length > 0 ? `${selectedPlatforms.length} platform${selectedPlatforms.length > 1 ? 's' : ''}` : 'selected platforms'} ({selectedType})
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      {showAddForm && (
-        <div style={{
-          background: 'white',
-          padding: '20px',
-          borderRadius: '8px',
-          marginBottom: '24px',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-        }}>
-          <h3>Add Game to Library</h3>
-          <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-            <input
-              type="text"
-              placeholder="Search games..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && searchGames()}
-              style={{
-                flex: 1,
-                padding: '10px',
-                border: '1px solid #ddd',
-                borderRadius: '6px'
-              }}
-            />
-            <button
-              onClick={searchGames}
-              style={{
-                padding: '10px 20px',
-                background: '#667eea',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer'
-              }}
-            >
-              Search
-            </button>
-          </div>
-
-          {searchResults.length > 0 && (
-            <div style={{ marginTop: '16px' }}>
-              {searchResults.map((game: any) => {
-                const platformOptions = getPlatformOptions(game)
-                const selectedPlatforms = platformSelections[game.id] || []
-                const selectedType = typeSelections[game.id] || 'physical'
-
-                return (
-                  <div
-                    key={game.id}
-                    style={{
-                      display: 'flex',
-                      gap: '12px',
-                      padding: '12px',
-                      border: '1px solid #e5e5e5',
-                      borderRadius: '6px',
-                      marginTop: '8px'
-                    }}
-                  >
-                    {game.cover?.url && (
-                      <img
-                        src={`https:${game.cover.url}`}
-                        alt={game.name}
-                        style={{ width: '60px', height: '80px', objectFit: 'cover' }}
-                      />
-                    )}
-                    <div style={{ flex: 1 }}>
-                      <h4 style={{ margin: 0 }}>{game.name}</h4>
-                      <p style={{ margin: '4px 0', color: '#666', fontSize: '14px' }}>
-                        {game.platforms?.map((p: any) => p.name).join(', ')}
-                      </p>
-                      <div style={{ marginTop: '8px' }}>
-                        <p style={{ margin: '0 0 4px 0', fontSize: '12px', color: '#555' }}>
-                          Choose the editions you own:
-                        </p>
-                        <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                          {(['physical', 'digital'] as const).map((type) => (
-                            <button
-                              key={type}
-                              onClick={() => handleTypeSelection(game.id, type)}
-                              style={{
-                                padding: '6px 12px',
-                                borderRadius: '4px',
-                                border: '1px solid #ddd',
-                                background: selectedType === type ? '#4f46e5' : 'white',
-                                color: selectedType === type ? 'white' : '#333',
-                                cursor: 'pointer',
-                                fontSize: '12px',
-                                textTransform: 'capitalize'
-                              }}
-                            >
-                              {type}
-                            </button>
-                          ))}
-                        </div>
-                        <label style={{ fontSize: '12px', color: '#555' }}>Platforms you own</label>
-                        <select
-                          multiple
-                          value={selectedPlatforms}
-                          onChange={(e) =>
-                            handlePlatformSelectChange(
-                              game.id,
-                              Array.from(e.target.selectedOptions, (option) => option.value)
-                            )
-                          }
-                          style={{
-                            width: '100%',
-                            minHeight: '80px',
-                            borderRadius: '6px',
-                            border: '1px solid #ddd',
-                            padding: '6px',
-                            marginTop: '4px'
-                          }}
-                        >
-                          {platformOptions.map((platform) => (
-                            <option key={platform} value={platform}>
-                              {platform}
-                            </option>
-                          ))}
-                        </select>
-                        <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                          <input
-                            type="text"
-                            placeholder="Add custom platform (e.g., PC, Steam Deck)"
-                            value={customPlatformInputs[game.id] || ''}
-                            onChange={(e) =>
-                              setCustomPlatformInputs((prev) => ({ ...prev, [game.id]: e.target.value }))
-                            }
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault()
-                                addCustomPlatform(game.id)
-                              }
-                            }}
-                            style={{
-                              flex: 1,
-                              padding: '6px 10px',
-                              borderRadius: '4px',
-                              border: '1px solid #ddd'
-                            }}
-                          />
-                          <button
-                            onClick={() => addCustomPlatform(game.id)}
-                            style={{
-                              padding: '6px 12px',
-                              borderRadius: '4px',
-                              border: 'none',
-                              background: '#6b7280',
-                              color: 'white',
-                              cursor: 'pointer',
-                              fontSize: '12px'
-                            }}
-                          >
-                            Add
-                          </button>
-                        </div>
-                        {selectedPlatforms.length > 0 && (
-                          <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                            {selectedPlatforms.map((platform) => (
-                              <span
-                                key={platform}
-                                style={{
-                                  padding: '2px 8px',
-                                  background: '#e0e7ff',
-                                  color: '#312e81',
-                                  borderRadius: '9999px',
-                                  fontSize: '11px'
-                                }}
-                              >
-                                {platform}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                        <button
-                          onClick={() => handleAddSelectedPlatforms(game)}
-                          disabled={selectedPlatforms.length === 0}
-                          style={{
-                            marginTop: '10px',
-                            padding: '8px 12px',
-                            background: selectedPlatforms.length === 0 ? '#a7f3d0' : '#10b981',
-                            color: selectedPlatforms.length === 0 ? '#064e3b' : 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: selectedPlatforms.length === 0 ? 'not-allowed' : 'pointer',
-                            fontSize: '12px'
-                          }}
-                        >
-                          Add {selectedPlatforms.length > 0 ? `${selectedPlatforms.length} platform${selectedPlatforms.length > 1 ? 's' : ''}` : 'selected platforms'} ({selectedType})
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
       {games.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-          <p>Your library is empty. Add your first game!</p>
-        </div>
+        <Card>
+          <CardContent className="py-16 text-center">
+            <p className="text-muted-foreground">Your library is empty. Add your first game!</p>
+          </CardContent>
+        </Card>
       ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-          gap: '20px'
-        }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {games.map((game) => (
-            <div
-              key={game.id}
-              style={{
-                background: 'white',
-                borderRadius: '8px',
-                overflow: 'hidden',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-              }}
-            >
-              {game.cover_url && (
-                <img
-                  src={game.cover_url}
-                  alt={game.name}
-                  style={{ width: '100%', height: '250px', objectFit: 'cover' }}
-                />
-              )}
-              <div style={{ padding: '12px' }}>
-                <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>{game.name}</h4>
-                <p style={{ margin: '4px 0', fontSize: '12px', color: '#666' }}>
-                  {game.platform}
-                </p>
-                <div style={{ display: 'flex', gap: '4px', marginTop: '8px' }}>
-                  <span style={{
-                    padding: '2px 8px',
-                    background: game.type === 'physical' ? '#fef3c7' : '#dbeafe',
-                    color: game.type === 'physical' ? '#92400e' : '#1e40af',
-                    borderRadius: '4px',
-                    fontSize: '10px',
-                    textTransform: 'uppercase'
-                  }}>
-                    {game.type}
-                  </span>
+            <Card key={game.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+              <div className="relative">
+                {game.cover_url && (
+                  <img
+                    src={game.cover_url}
+                    alt={game.name}
+                    className="w-full h-64 object-cover"
+                  />
+                )}
+                <div className="absolute top-2 right-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="secondary" size="icon" className="h-8 w-8">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => startEditingGame(game)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => removeGame(game.id)}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                {game.type === 'physical' && (
+                  <Badge className="absolute bottom-2 left-2 bg-amber-600 text-white">
+                    Physical
+                  </Badge>
+                )}
+              </div>
+
+              <CardContent className="p-4 space-y-3">
+                <div>
+                  <h3 className="font-semibold line-clamp-1">{game.name}</h3>
+                  <p className="text-sm text-muted-foreground">{game.platform}</p>
                 </div>
 
                 {editingGameId === game.id ? (
-                  <div style={{ marginTop: '10px' }}>
-                    <label style={{ display: 'block', fontSize: '12px', color: '#555', marginBottom: '4px' }}>
-                      Platform
-                    </label>
-                    <input
-                      value={editPlatform}
-                      onChange={(e) => setEditPlatform(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '6px 10px',
-                        borderRadius: '4px',
-                        border: '1px solid #ddd',
-                        marginBottom: '8px'
-                      }}
-                    />
-                    <label style={{ display: 'block', fontSize: '12px', color: '#555', marginBottom: '4px' }}>
-                      Edition type
-                    </label>
-                    <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                      {(['physical', 'digital'] as const).map((type) => (
-                        <button
-                          key={type}
-                          onClick={() => setEditType(type)}
-                          style={{
-                            flex: 1,
-                            padding: '6px 12px',
-                            borderRadius: '4px',
-                            border: '1px solid #ddd',
-                            background: editType === type ? '#4f46e5' : 'white',
-                            color: editType === type ? 'white' : '#333',
-                            cursor: 'pointer',
-                            fontSize: '12px',
-                            textTransform: 'capitalize'
-                          }}
-                        >
-                          {type}
-                        </button>
-                      ))}
+                  <div className="space-y-3 pt-2 border-t">
+                    <div className="space-y-2">
+                      <Label className="text-xs">Platform</Label>
+                      <Input
+                        value={editPlatform}
+                        onChange={(e) => setEditPlatform(e.target.value)}
+                      />
                     </div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button
+                    <div className="space-y-2">
+                      <Label className="text-xs">Edition Type</Label>
+                      <div className="flex gap-2">
+                        {(['physical', 'digital'] as const).map((type) => (
+                          <Button
+                            key={type}
+                            type="button"
+                            variant={editType === type ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setEditType(type)}
+                            className="flex-1 capitalize"
+                          >
+                            {type}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
                         onClick={saveGameEdit}
                         disabled={savingEdit}
-                        style={{
-                          flex: 1,
-                          padding: '6px',
-                          background: '#10b981',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: savingEdit ? 'not-allowed' : 'pointer',
-                          fontSize: '12px'
-                        }}
+                        size="sm"
+                        className="flex-1"
                       >
                         {savingEdit ? 'Saving...' : 'Save'}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={cancelEditing}
-                        style={{
-                          flex: 1,
-                          padding: '6px',
-                          background: '#e5e7eb',
-                          color: '#111827',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '12px'
-                        }}
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
                       >
                         Cancel
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-                    <button
-                      onClick={() => startEditingGame(game)}
-                      style={{
-                        flex: 1,
-                        padding: '4px 8px',
-                        background: '#3b82f6',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '12px'
-                      }}
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant={game.type === 'physical' ? 'default' : 'secondary'}
+                      className="capitalize"
                     >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => removeGame(game.id)}
-                      style={{
-                        flex: 1,
-                        padding: '4px 8px',
-                        background: '#ef4444',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '12px'
-                      }}
-                    >
-                      Remove
-                    </button>
+                      {game.type}
+                    </Badge>
                   </div>
                 )}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
     </div>
   )
 }
-
