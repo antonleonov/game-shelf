@@ -108,7 +108,7 @@ export default function AddGameDialog({ open, onOpenChange, onAddGame }: AddGame
       type: physical && digital ? 'digital' : (physical ? 'physical' : 'digital'),
       platform,
       status,
-      hoursPlayed: hoursPlayed ? parseFloat(hoursPlayed) : 0,
+      hoursPlayed: hoursPlayed ? Math.round(parseFloat(hoursPlayed)) : 0,
     })
 
     onOpenChange(false)
@@ -374,9 +374,15 @@ export default function AddGameDialog({ open, onOpenChange, onAddGame }: AddGame
                     id="hours"
                     type="number"
                     min="0"
-                    step="0.5"
+                    step="1"
                     value={hoursPlayed}
-                    onChange={(e) => setHoursPlayed(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      // Only allow integers
+                      if (value === '' || /^\d+$/.test(value)) {
+                        setHoursPlayed(value)
+                      }
+                    }}
                     placeholder="Optional"
                     className="bg-white text-gray-900 border-gray-300"
                   />

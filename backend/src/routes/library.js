@@ -153,8 +153,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
            platform = COALESCE($4, platform),
            type = COALESCE($5, type),
            status = COALESCE($6, status),
-           hours_played = COALESCE($7, hours_played),
-           updated_at = CURRENT_TIMESTAMP
+           hours_played = COALESCE($7, hours_played)
        WHERE id = $8 AND user_id = $9
        RETURNING *`,
       [purchaseDate, purchasePrice, notes, platform, type, status, hoursPlayed, id, req.user.id]

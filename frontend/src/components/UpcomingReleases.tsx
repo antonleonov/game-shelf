@@ -9,6 +9,14 @@ export default function UpcomingReleases() {
   const [releases, setReleases] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
+  // Helper function to get high-quality cover URL from IGDB
+  const getCoverUrl = (cover: any) => {
+    if (!cover?.url) return null
+    // Convert t_thumb to t_cover_big for higher quality, same as backend does
+    const url = cover.url.replace('t_thumb', 't_cover_big')
+    return `https:${url}`
+  }
+
   useEffect(() => {
     loadReleases()
   }, [])
@@ -53,15 +61,17 @@ export default function UpcomingReleases() {
         </Card>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {releases.map((game: any) => (
-            <Card key={game.id} className="overflow-hidden">
-              {game.cover?.url && (
-                <img
-                  src={`https:${game.cover.url}`}
-                  alt={game.name}
-                  className="w-full h-64 object-cover"
-                />
-              )}
+          {releases.map((game: any) => {
+            const coverUrl = getCoverUrl(game.cover)
+            return (
+              <Card key={game.id} className="overflow-hidden">
+                {coverUrl && (
+                  <img
+                    src={coverUrl}
+                    alt={game.name}
+                    className="w-full h-80 object-cover"
+                  />
+                )}
               <CardContent className="p-4">
                 <h4 className="font-semibold text-sm mb-2 line-clamp-2">{game.name}</h4>
                 {game.first_release_date && (
@@ -78,7 +88,8 @@ export default function UpcomingReleases() {
                 </Button>
               </CardContent>
             </Card>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>
