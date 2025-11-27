@@ -29,8 +29,8 @@ services:
       NODE_ENV: development
       PORT: 3001
       DATABASE_URL: postgresql://gameshelf:gameshelf_dev@postgres:5432/gameshelf
-      IGDB_CLIENT_ID: ${IGDB_CLIENT_ID:-fq9axor5gt3896p784metcfcs0huin}
-      IGDB_CLIENT_SECRET: ${IGDB_CLIENT_SECRET:-55egp0tx34711ucygwsp4606s6tlic}
+      IGDB_CLIENT_ID: ${IGDB_CLIENT_ID}
+      IGDB_CLIENT_SECRET: ${IGDB_CLIENT_SECRET}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}

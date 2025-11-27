@@ -4,7 +4,7 @@
 
 1. **Docker & Docker Compose** - Install from [docker.com](https://www.docker.com/)
 2. **Google OAuth Credentials** - Get from [Google Cloud Console](https://console.cloud.google.com/)
-3. **IGDB API Credentials** - Already provided (Twitch App credentials)
+3. **IGDB API Credentials** - Get from [Twitch Developer Console](https://dev.twitch.tv/console/apps) (create a Twitch App)
 
 ## Step-by-Step Setup
 
@@ -22,9 +22,9 @@ Create a `.env` file in the root directory:
 # Database
 DATABASE_URL=postgresql://gameshelf:gameshelf_dev@postgres:5432/gameshelf
 
-# IGDB API (Twitch)
-IGDB_CLIENT_ID=fq9axor5gt3896p784metcfcs0huin
-IGDB_CLIENT_SECRET=55egp0tx34711ucygwsp4606s6tlic
+# IGDB API (Twitch) - Get from Twitch Developer Console
+IGDB_CLIENT_ID=your-igdb-client-id
+IGDB_CLIENT_SECRET=your-igdb-client-secret
 
 # Google OAuth (Get from Google Cloud Console)
 GOOGLE_CLIENT_ID=your-google-client-id-here

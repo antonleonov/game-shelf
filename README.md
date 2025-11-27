@@ -39,8 +39,8 @@ A service for gamers to organize their game library, track upcoming releases, co
    Create a `.env` file in the root directory:
    ```env
    DATABASE_URL=postgresql://gameshelf:gameshelf_dev@localhost:5432/gameshelf
-   IGDB_CLIENT_ID=fq9axor5gt3896p784metcfcs0huin
-   IGDB_CLIENT_SECRET=55egp0tx34711ucygwsp4606s6tlic
+   IGDB_CLIENT_ID=your-igdb-client-id
+   IGDB_CLIENT_SECRET=your-igdb-client-secret
    GOOGLE_CLIENT_ID=your-google-client-id
    GOOGLE_CLIENT_SECRET=your-google-client-secret
    JWT_SECRET=your-secret-key-change-in-production
