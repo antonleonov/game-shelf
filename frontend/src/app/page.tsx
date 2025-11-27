@@ -6,6 +6,7 @@ import Dashboard from '@/components/Dashboard'
 
 export default function Home() {
   const { user, loading } = useAuth()
+  const isDevMode = process.env.NEXT_PUBLIC_ENABLE_DEV_MODE === 'true'
 
   if (loading) {
     return (
@@ -15,7 +16,9 @@ export default function Home() {
     )
   }
 
-  if (!user) {
+  // In dev mode, always show Dashboard (auth provider sets mock user)
+  // Otherwise, require authentication
+  if (!isDevMode && !user) {
     return <Login />
   }
 

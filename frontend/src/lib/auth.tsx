@@ -26,7 +26,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // Development mode: bypass auth if ENABLE_DEV_MODE is set
+  const isDevMode = process.env.NEXT_PUBLIC_ENABLE_DEV_MODE === 'true'
+
   useEffect(() => {
+    // In dev mode, set a mock user and create a dev token
+    if (isDevMode) {
+      const devUser = {
+        id: 1,
+        email: 'dev@example.com',
+        name: 'Dev User',
+        picture: undefined
+      }
+      setUser(devUser)
+      
+      // Create a dev token for API calls
+      // This is a simple base64 encoded string that the backend can recognize
+      const devPayload = JSON.stringify({ userId: 1, dev: true })
+      const devToken = 'dev-mode-token-' + btoa(devPayload)
+      Cookies.set('token', devToken, { expires: 7 })
+      
+      setLoading(false)
+      return
+    }
+
     const token = Cookies.get('token')
     if (token) {
       axios.get(`${API_URL}/api/auth/me`, {
@@ -41,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } else {
       setLoading(false)
     }
-  }, [])
+  }, [isDevMode])
 
   const login = async (googleId: string, email: string, name: string, picture?: string) => {
     try {

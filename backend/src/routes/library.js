@@ -22,10 +22,30 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
+// Get library statistics
+router.get('/stats', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT 
+        COUNT(*) as total_games,
+        COUNT(*) FILTER (WHERE ug.status = 'Completed') as completed,
+        COUNT(*) FILTER (WHERE ug.status = 'Playing') as playing,
+        COALESCE(SUM(ug.hours_played), 0) as total_hours
+       FROM user_games ug
+       WHERE ug.user_id = $1`,
+      [req.user.id]
+    );
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Get stats error:', error);
+    res.status(500).json({ error: 'Failed to get statistics' });
+  }
+});
+
 // Add game to library
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    const { igdbId, type, platform, purchaseDate, purchasePrice, notes } = req.body;
+    const { igdbId, type, platform, purchaseDate, purchasePrice, notes, status, hoursPlayed } = req.body;
 
     if (!igdbId || !type || !platform) {
       return res.status(400).json({ error: 'Missing required fields: igdbId, type, platform' });
@@ -33,6 +53,10 @@ router.post('/', authenticateToken, async (req, res) => {
 
     if (!['physical', 'digital'].includes(type)) {
       return res.status(400).json({ error: 'Type must be "physical" or "digital"' });
+    }
+
+    if (status && !['Backlog', 'Playing', 'Completed', 'Dropped'].includes(status)) {
+      return res.status(400).json({ error: 'Status must be one of: Backlog, Playing, Completed, Dropped' });
     }
 
     // Get or fetch game
@@ -60,15 +84,17 @@ router.post('/', authenticateToken, async (req, res) => {
 
     // Add to library
     const result = await pool.query(
-      `INSERT INTO user_games (user_id, game_id, type, platform, purchase_date, purchase_price, notes)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO user_games (user_id, game_id, type, platform, purchase_date, purchase_price, notes, status, hours_played)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        ON CONFLICT (user_id, game_id, type, platform) 
        DO UPDATE SET 
          purchase_date = EXCLUDED.purchase_date,
          purchase_price = EXCLUDED.purchase_price,
-         notes = EXCLUDED.notes
+         notes = EXCLUDED.notes,
+         status = EXCLUDED.status,
+         hours_played = EXCLUDED.hours_played
        RETURNING *`,
-      [req.user.id, gameId, type, platform, purchaseDate || null, purchasePrice || null, notes || null]
+      [req.user.id, gameId, type, platform, purchaseDate || null, purchasePrice || null, notes || null, status || 'Backlog', hoursPlayed || 0]
     );
 
     res.status(201).json(result.rows[0]);
@@ -105,7 +131,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { purchaseDate, purchasePrice, notes, platform, type } = req.body;
+    const { purchaseDate, purchasePrice, notes, platform, type, status, hoursPlayed } = req.body;
 
     if (type && !['physical', 'digital'].includes(type)) {
       return res.status(400).json({ error: 'Type must be "physical" or "digital"' });
@@ -115,6 +141,10 @@ router.put('/:id', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Platform cannot be empty' });
     }
 
+    if (status && !['Backlog', 'Playing', 'Completed', 'Dropped'].includes(status)) {
+      return res.status(400).json({ error: 'Status must be one of: Backlog, Playing, Completed, Dropped' });
+    }
+
     const result = await pool.query(
       `UPDATE user_games 
        SET purchase_date = COALESCE($1, purchase_date),
@@ -122,10 +152,12 @@ router.put('/:id', authenticateToken, async (req, res) => {
            notes = COALESCE($3, notes),
            platform = COALESCE($4, platform),
            type = COALESCE($5, type),
+           status = COALESCE($6, status),
+           hours_played = COALESCE($7, hours_played),
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $6 AND user_id = $7
+       WHERE id = $8 AND user_id = $9
        RETURNING *`,
-      [purchaseDate, purchasePrice, notes, platform, type, id, req.user.id]
+      [purchaseDate, purchasePrice, notes, platform, type, status, hoursPlayed, id, req.user.id]
     );
 
     if (result.rows.length === 0) {

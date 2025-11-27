@@ -54,6 +54,7 @@ services:
       NODE_ENV: development
       NEXT_PUBLIC_API_URL: http://localhost:3001
       NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      NEXT_PUBLIC_ENABLE_DEV_MODE: ${ENABLE_DEV_MODE:-true}
     volumes:
       - ./frontend:/app
       - /app/node_modules
